@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="kotmir">
+  <title>GitHub Activity Generator · kotmir</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/img/logo.svg" alt="">
+      <div>
+        <h1>GitHub Activity <span>Generator</span></h1>
+        <p data-i18n="subtitle"></p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span id="gitBadge" class="badge" hidden></span>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" data-lang="ru">RU</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <button type="button" id="themeBtn" class="icon-btn" data-i18n-title="theme" aria-label="Theme">🌓</button>
+    </div>
+  </header>
+
+  <div id="offlineBanner" class="banner" hidden>
+    <strong data-i18n="offline.title"></strong>
+    <span data-i18n-html="offline.text"></span>
+  </div>
+
+  <main class="layout">
+    <!-- ======== settings ======== -->
+    <form id="settingsForm" class="card" autocomplete="off" novalidate>
+      <h2 data-i18n="sec.settings"></h2>
+
+      <div class="field">
+        <span class="lbl" data-i18n="presets"></span>
+        <div class="presets">
+          <button type="button" class="chip" data-preset="light" data-i18n="preset.light"></button>
+          <button type="button" class="chip" data-preset="normal" data-i18n="preset.normal"></button>
+          <button type="button" class="chip" data-preset="heavy" data-i18n="preset.heavy"></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="repository">
+          <span data-i18n="f.repo"></span>
+          <small class="hint" data-i18n="f.repo.opt"></small>
+        </label>
+        <input type="text" id="repository" spellcheck="false" data-i18n-ph="f.repo.ph">
+        <p class="hint" data-i18n="hint.repo"></p>
+      </div>
+
+      <div class="field">
+        <label for="user_name" data-i18n="f.name"></label>
+        <input type="text" id="user_name">
+      </div>
+      <div class="field">
+        <label for="user_email" data-i18n="f.email"></label>
+        <input type="email" id="user_email" spellcheck="false">
+        <p class="hint" data-i18n="hint.email"></p>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="days_before" data-i18n="f.before"></label>
+          <input type="number" id="days_before" min="0" max="3650" value="365">
+        </div>
+        <div class="field">
+          <label for="days_after" data-i18n="f.after"></label>
+          <input type="number" id="days_after" min="0" max="365" value="0">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="frequency"><span data-i18n="f.freq"></span><output id="freqOut">80%</output></label>
+        <input type="range" id="frequency" min="0" max="100" value="80">
+      </div>
+
+      <div class="field">
+        <label for="max_commits"><span data-i18n="f.max"></span><output id="maxOut">10</output></label>
+        <input type="range" id="max_commits" min="1" max="20" value="10">
+      </div>
+
+      <label class="check field">
+        <input type="checkbox" id="no_weekends"><span data-i18n="f.weekends"></span>
+      </label>
+
+      <details class="advanced">
+        <summary data-i18n="adv"></summary>
+        <div class="field">
+          <label for="mode" data-i18n="f.mode"></label>
+          <select id="mode">
+            <option value="file" data-i18n="mode.file"></option>
+            <option value="empty" data-i18n="mode.empty"></option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="seed" data-i18n="f.seed"></label>
+          <div class="seed-row">
+            <input type="text" id="seed" inputmode="numeric">
+            <button type="button" id="btnDice" class="btn small" data-i18n-title="btn.dice" aria-label="Random seed">🎲</button>
+          </div>
+          <p class="hint" data-i18n="hint.seed"></p>
+        </div>
+        <div class="field">
+          <label for="output_dir" data-i18n="f.out"></label>
+          <input type="text" id="output_dir" value="output" spellcheck="false">
+        </div>
+      </details>
+
+      <div class="actions">
+        <button type="submit" id="btnGenerate" class="btn primary" data-i18n="btn.generate" disabled></button>
+        <button type="button" id="btnCancel" class="btn danger" data-i18n="btn.cancel" hidden></button>
+      </div>
+    </form>
+
+    <!-- ======== right column ======== -->
+    <div class="stack">
+      <section class="card">
+        <h2 data-i18n="sec.preview"></h2>
+        <div class="heat-scroll"><div id="heat" class="heat"></div></div>
+        <div class="legend">
+          <span data-i18n="legend.less"></span>
+          <i style="background:var(--lvl0)"></i><i style="background:var(--lvl1)"></i>
+          <i style="background:var(--lvl2)"></i><i style="background:var(--lvl3)"></i>
+          <i style="background:var(--lvl4)"></i>
+          <span data-i18n="legend.more"></span>
+        </div>
+        <div class="stats">
+          <div class="stat"><b id="stCommits">–</b><span data-i18n="stat.commits"></span></div>
+          <div class="stat"><b id="stDays">–</b><span data-i18n="stat.days"></span></div>
+          <div class="stat"><b id="stMax">–</b><span data-i18n="stat.max"></span></div>
+          <div class="stat"><b id="stAvg">–</b><span data-i18n="stat.avg"></span></div>
+        </div>
+        <p id="notice" class="notice" hidden></p>
+      </section>
+
+      <section class="card">
+        <h2><span data-i18n="sec.run"></span><span id="statePill" class="state-pill idle"></span></h2>
+        <div id="progress" class="progress"><div id="progressBar"></div></div>
+        <div class="progress-meta"><span id="progressText"></span><span id="progressPct"></span></div>
+
+        <div class="console-head">
+          <span class="title" data-i18n="log.title"></span>
+          <div class="console-tools">
+            <button type="button" id="btnCopy" class="btn small" data-i18n="log.copy"></button>
+            <button type="button" id="btnClear" class="btn small" data-i18n="log.clear"></button>
+            <button type="button" id="btnLogFile" class="btn small" data-i18n="log.download"></button>
+          </div>
+        </div>
+        <div id="console" class="console" role="log" aria-live="polite"></div>
+
+        <div id="result" class="result" hidden>
+          <div><small data-i18n="result.path"></small><code id="resultPath"></code></div>
+          <button type="button" id="btnOpen" class="btn small primary" data-i18n="btn.open"></button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="author">
+      <span data-i18n="footer.author"></span>: <b>kotmir</b> ·
+      <span data-i18n="footer.based"></span>
+      <a href="https://github.com/Shpota/github-activity-generator" target="_blank" rel="noopener noreferrer">Shpota</a>
+      (Apache-2.0)
+    </div>
+    <div>
+      v2.0.0 · <button type="button" id="stopServer" class="link-btn" data-i18n="btn.stop" hidden></button>
+    </div>
+    <div class="disclaimer" data-i18n="footer.disclaimer"></div>
+  </footer>
+
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+GitHub Activity Generator
+Copyright 2026 kotmir
+
+This product is a modified version of "github-activity-generator" by
+Shpota (https://github.com/Shpota/github-activity-generator),
+licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Changes by kotmir: new project structure (app/ package), local web
+interface (index.html + assets/), RU/EN localisation, lime theme,
+structured logging, graph preview, cancellation, input validation,
+security hardening of git calls, empty-commit mode, reproducible seeds,
+tests and CI.
